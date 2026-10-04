@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Thimar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#F6F1E7;--g:#1F3D2F;--s:#A9BFA3;--s2:#E4ECDF;--y:#D9B24C;--w:#fff;--t:#1F3D2F;--m:#6B7A70;--r:#C0553B;--sh:0 2px 10px rgba(31,61,47,.07);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#E9E3D6}}
+*{box-sizing:border-box;margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html,body{height:100%;background:#E9E3D6}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:430px;height:100%;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:500px){body{align-items:center}#app{height:min(860px,96vh);border-radius:36px;box-shadow:0 20px 60px rgba(31,61,47,.2)}}
+#scr{flex:1;overflow-y:auto;padding:18px 18px 24px;animation:in .3s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+h1{font-size:26px;color:var(--g)}h2{font-size:20px;color:var(--g)}h3{font-size:15px;color:var(--g)}p,.m{color:var(--m);font-size:13px;line-height:1.5}
+.card{background:var(--w);border-radius:20px;padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+.btn{width:100%;border:0;border-radius:16px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;background:var(--y);color:var(--g);transition:transform .15s}
+.btn:active{transform:scale(.97)}.btn.g{background:var(--g);color:#fff}.btn.o{background:transparent;border:2px solid var(--g);color:var(--g)}.btn.sm{padding:11px;font-size:14px}
+.logo{display:flex;align-items:center;gap:6px;font-weight:800;font-size:24px;color:var(--g);letter-spacing:.5px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.chip{padding:14px 16px;border-radius:16px;background:var(--w);border:2px solid transparent;font-weight:600;color:var(--g);cursor:pointer;box-shadow:var(--sh);flex:1 1 44%;text-align:center;transition:.2s}
+.chip.on{background:var(--g);color:#fff;border-color:var(--y);transform:scale(1.02)}
+.dots{display:flex;gap:6px;margin:14px 0}.dots i{flex:1;height:5px;border-radius:5px;background:var(--s2)}.dots i.on{background:var(--g)}
+.nav{display:flex;background:var(--w);padding:8px 8px 12px;box-shadow:0 -2px 12px rgba(31,61,47,.06)}
+.nav button{flex:1;border:0;background:none;color:var(--m);font-size:11px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button.on{color:var(--g);font-weight:700}.nav span{font-size:20px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.bar{height:10px;border-radius:10px;background:var(--s2);overflow:hidden;margin-top:8px}.bar b{display:block;height:100%;background:var(--g);border-radius:10px;transition:width .8s}
+.bar.over b{background:var(--r)}.over .amt{color:var(--r);font-weight:700}
+.pill{background:var(--s2);color:var(--g);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700}
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:var(--g);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;z-index:9;animation:in .3s;width:max-content;max-width:86%;text-align:center}
+.modal{position:absolute;inset:0;background:rgba(20,35,28,.5);display:flex;align-items:flex-end;z-index:8}
+.sheet{background:var(--bg);width:100%;border-radius:26px 26px 0 0;padding:20px;max-height:85%;overflow:auto;animation:in .3s}
+.step{display:flex;gap:6px;align-items:center}.step button{width:32px;height:32px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:18px;cursor:pointer}
+.tl{display:flex;gap:12px;align-items:center;padding:10px 0}.tl .c{width:38px;height:38px;border-radius:50%;background:var(--s2);display:grid;place-items:center;font-weight:800;color:var(--g);flex:none}
+.tl.done .c{background:var(--g);color:#fff}.tl.cur .c{background:var(--y)}
+.days{display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:10px}.days div{flex:1;text-align:center;font-size:11px;color:var(--m)}.days i{display:block;background:var(--s);border-radius:8px;margin-bottom:4px}.days .t i{background:var(--y)}
+.hero{background:var(--g);color:#fff;border-radius:22px;padding:18px;margin-bottom:14px}.hero p{color:#CFDCCB}
+</style></head><body><div id="app"><div id="scr"></div><div id="nav"></div></div>
+<script>
+const CATS=[["Food","🍽️"],["Transport","🚌"],["Entertainment","🎬"],["Shopping","🛍️"],["Groceries","🛒"]];
+const DEF={screen:"welcome",step:0,ans:{},tab:"home",b:{Food:[300,400],Transport:[195,400],Entertainment:[315,400],Shopping:[440,400],Groceries:[50,900]},claimed:{}};
+let S;try{S=JSON.parse(localStorage.getItem("thimar"))||structuredClone(DEF)}catch(e){S=structuredClone(DEF)}
+const save=()=>{try{localStorage.setItem("thimar",JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const leaf='<svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 19C5 9 11 4 20 4c0 9-5 15-13 15" fill="#A9BFA3"/><path d="M5 19c3-5 6-8 11-10" stroke="#1F3D2F" stroke-width="1.6" fill="none"/></svg>';
+const logo=`<div class="logo">${leaf}Thimar</div>`;
+function go(k,v){S[k]=v;save();render()}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;$("#app").append(d);setTimeout(()=>d.remove(),2200)}
+function modal(h){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="sheet">${h}</div>`;m.onclick=e=>{if(e.target==m)m.remove()};$("#app").append(m);return m}
+const tot=()=>{let B=0,Sp=0;for(const k in S.b){B+=S.b[k][1];Sp+=S.b[k][0]}return[B,Sp]};
+const Q=[
+ {q:"What is your monthly income or allowance?",o:["Under 1,000 SAR","1,000 – 2,000 SAR","2,000 – 3,500 SAR","3,500+ SAR"],k:"income"},
+ {q:"What are you currently saving for?",o:["💻 Laptop","✈️ Travel","🛟 Emergency fund","🚗 Car"],k:"save"},
+ {q:"Which categories do you spend the most on?",o:["🍽️ Food","🚌 Transport","🎬 Entertainment","🛍️ Shopping","🛒 Groceries"],k:"cats",multi:1},
+ {q:"What is your main financial goal?",o:["Build savings","Spend less","Stay on budget","Earn rewards"],k:"goal"}];
+function ring(p,c,sub){const R=62,C=2*Math.PI*R;return`<svg width="160" height="160" viewBox="0 0 160 160"><circle cx="80" cy="80" r="${R}" stroke="rgba(255,255,255,.18)" stroke-width="14" fill="none"/><circle cx="80" cy="80" r="${R}" stroke="#D9B24C" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}" transform="rotate(-90 80 80)" style="transition:stroke-dashoffset 1s"/><text x="80" y="78" text-anchor="middle" fill="#fff" font-size="26" font-weight="800">${c}</text><text x="80" y="98" text-anchor="middle" fill="#CFDCCB" font-size="12">${sub}</text></svg>`}
+const bar=(n,e,v)=>{const o=v[0]>v[1];return`<div class="${o?"over":""}" style="margin-bottom:14px"><div class="row"><h3>${e} ${n}</h3><span class="m amt">${v[0]} / ${v[1]} SAR${o?" · over by "+(v[0]-v[1]):""}</span></div><div class="bar ${o?"over":""}"><b style="width:${Math.min(100,v[0]/v[1]*100)}%"></b></div></div>`};
+const views={
+welcome:()=>`<div style="height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:30px 6px"><div style="text-align:center;margin-top:40px"><div style="display:inline-grid;place-items:center;width:110px;height:110px;border-radius:32px;background:var(--g);margin-bottom:22px"><svg width="64" height="64" viewBox="0 0 24 24"><path d="M5 19C5 9 11 4 20 4c0 9-5 15-13 15" fill="#A9BFA3"/><path d="M5 19c3-5 6-8 11-10" stroke="#1F3D2F" stroke-width="1.4" fill="none"/></svg></div><div class="logo" style="justify-content:center;font-size:34px">Thimar</div><h1 style="margin-top:34px">Welcome to Thimar</h1><p style="margin-top:8px;font-size:15px">Your money. Your goals. Your rewards.</p></div><div><button class="btn" onclick="S.step=0;S.ans={};go('screen','onb')">Get Started</button><button class="btn o" style="margin-top:12px" onclick="login()">Log in</button><p style="text-align:center;margin-top:16px;font-size:11px">University project concept inspired by Bank Albilad.<br>Not an official Bank Albilad product.</p></div></div>`,
+onb:()=>{const q=Q[S.step],a=S.ans[q.k];return`<div class="row">${logo}<span class="m">${S.step+1}/4</span></div><div class="dots">${Q.map((_,i)=>`<i class="${i<=S.step?"on":""}"></i>`).join("")}</div><h1 style="margin-top:22px">${q.q}</h1><p style="margin-top:6px">${q.multi?"Pick one or more.":"Tap one to continue."}</p><div class="chips">${q.o.map(o=>`<div class="chip ${(q.multi?(a||[]).includes(o):a==o)?"on":""}" onclick="pick('${q.k}','${o}',${!!q.multi})">${o}</div>`).join("")}</div><button class="btn" onclick="next()">${S.step==3?"Finish":"Continue"}</button>${S.step?`<button class="btn o" style="margin-top:10px" onclick="S.step--;render()">Back</button>`:""}`},
+ready:()=>`<div style="text-align:center;padding-top:30px"><div style="font-size:60px">🌿</div><h1 style="margin-top:12px">Your personalized budget is ready!</h1><p style="margin:8px 0 22px">Built from your income, habits and goals${S.ans.save?" — with a plan for your "+S.ans.save.replace(/^\S+\s/,"")+" goal":""}.</p><div class="card" style="text-align:left"><div class="row"><h3>Monthly budget</h3><b style="color:var(--g)">2,500 SAR</b></div>${CATS.map(([n,e])=>`<div class="row m" style="padding:7px 0">${e} ${n}<b>${S.b[n][1]} SAR</b></div>`).join("")}</div><button class="btn" onclick="S.screen='app';S.tab='home';save();render();toast('Budget created. Welcome, Sara!')">Create My Budget</button></div>`,
+home:()=>{const[B,Sp]=tot();return`<div class="row" style="margin-bottom:16px">${logo}<span style="font-size:22px" onclick="tab('profile')">🔔</span></div><h1>Welcome, Sara!</h1><p>Here's how your month is going.</p><div class="hero" style="margin-top:16px"><div class="row"><div><p>Balance</p><div style="font-size:28px;font-weight:800">3,150.75 SAR</div></div><span class="pill">🔥 3-Month Budget Streak</span></div><div class="row" style="margin-top:6px"><div><p style="margin-top:18px">Remaining Budget</p><div style="font-size:22px;font-weight:800;color:var(--y)">1,250 SAR</div></div>${ring(Sp/B,Math.round(Sp/B*100)+"%","of budget used")}</div></div>
+<div class="card"><h3 style="margin-bottom:10px">Spending categories</h3>${[["Food","🍽️"],["Transport","🚌"],["Entertainment","🎬"],["Shopping","🛍️"]].map(([n,e])=>`<div class="row" style="padding:7px 0"><span>${e} ${n}</span><b style="color:${S.b[n][0]>S.b[n][1]?"var(--r)":"var(--g)"}">${S.b[n][0]} SAR</b></div>`).join("")}</div>
+<div class="card"><div class="row"><h3>🎁 Bookstore Coupon</h3><span class="pill">87% Progress to Unlock</span></div><div class="bar"><b style="width:87%;background:var(--y)"></b></div><p style="margin:10px 0 14px">Stay within budget for 4 more days to unlock it.</p><button class="btn" onclick="earn()">Earn Your Reward</button></div>`},
+budget:()=>{const[B,Sp]=tot();return`<h1>My Budget Overview</h1><div class="card row" style="margin-top:16px;text-align:center;gap:6px">${[["Budgeted",B],["Spent",Sp],["Left",B-Sp]].map(([a,b])=>`<div style="flex:1"><p>${a}</p><b style="font-size:18px;color:var(--g)">${b.toLocaleString()} SAR</b></div>`).join("")}</div><div class="card">${CATS.map(([n,e])=>bar(n,e,S.b[n])).join("")}</div>
+<div class="card"><h3>Daily / Weekly Spending Tracker</h3><div class="days">${[["S",40],["M",65],["T",30],["W",80],["T",55],["F",20],["S",70]].map(([d,h],i)=>`<div class="${i==3?"t":""}"><i style="height:${h}px"></i>${d}</div>`).join("")}</div><p style="margin-top:8px">Peak day: Wednesday · avg 186 SAR/day</p></div>
+<div class="card" style="background:var(--s2)"><h3>💻 You saved SAR 250 towards your Laptop Goal!</h3><div class="bar"><b style="width:25%"></b></div><p style="margin-top:6px">250 / 1,000 SAR</p></div>
+<button class="btn" onclick="adjust()">Adjust Categories</button><button class="btn o" style="margin-top:10px" onclick="report()">See Detailed Report</button>`},
+rewards:()=>{const L=[["Coffee Coupon","☕"],["Free Delivery","🛵"],["Gift Card","🎁"],["3% Cashback","💰"]];return`<h1>My Rewards Progress</h1><div class="hero" style="margin-top:16px"><p>Current reward</p><div class="row"><h2 style="color:#fff">Bookstore Coupon 📚</h2><b style="color:var(--y)">87%</b></div><div class="bar"><b style="width:87%;background:var(--y)"></b></div><p style="margin-top:12px">Next reward: <b style="color:#fff">3% Cashback</b></p></div>
+<div class="card"><h3>Your streak journey</h3>${L.map((r,i)=>`<div class="tl ${i<3?"done":"cur"}"><div class="c">${i<3?"✓":i+1}</div><div style="flex:1"><h3>Month ${i+1} → ${r[0]}</h3><p>${i<3?"Unlocked":"In progress"}</p></div><span style="font-size:24px">${r[1]}</span></div>`).join("")}</div>
+<div class="card" style="text-align:center"><div style="font-size:34px">🔥</div><h2>3-Month Saving Streak!</h2><p>Small steps today turn into big rewards tomorrow!</p></div><button class="btn" onclick="allRewards()">See All Rewards</button>`},
+profile:()=>`<div style="text-align:center"><div style="width:84px;height:84px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-size:34px;margin:6px auto 10px">S</div><h2>Sara Al-Qahtani</h2><p>University student · Riyadh</p></div><div class="card" style="margin-top:18px">${[["Monthly allowance",S.ans.income||"2,000 – 3,500 SAR"],["Saving for",S.ans.save||"💻 Laptop"],["Main goal",S.ans.goal||"Stay on budget"]].map(a=>`<div class="row" style="padding:8px 0"><span class="m">${a[0]}</span><b style="color:var(--g)">${a[1]}</b></div>`).join("")}</div>
+<div class="card"><h3>About this project</h3><p style="margin:8px 0">A survey conducted among university students showed that <b>83%</b> were interested in personal budgeting.</p><p>Thimar supports Saudi Vision 2030 by encouraging digital banking, financial awareness, and stronger financial habits among young people.</p><p style="margin-top:10px;font-size:11px">University project concept/prototype inspired by Bank Albilad. Not an official Bank Albilad product.</p></div>
+<button class="btn o" onclick="toast('Notifications are on')">🔔 Notification settings</button><button class="btn g" style="margin-top:10px" onclick="S=structuredClone(DEF);save();render()">Reset demo / Log out</button>`};
+function login(){S.screen="app";S.tab="home";save();render();toast("Welcome back, Sara!")}
+function pick(k,o,m){if(m){const a=S.ans[k]||[];S.ans[k]=a.includes(o)?a.filter(x=>x!=o):[...a,o]}else S.ans[k]=o;render()}
+function next(){const q=Q[S.step];if(!S.ans[q.k]||!S.ans[q.k].length){toast("Please choose an option");return}if(S.step<3){S.step++;render()}else go("screen","ready")}
+function tab(t){S.tab=t;save();render()}
+function earn(){toast("🎉 Keep going! 4 more days to unlock your Bookstore Coupon")}
+function allRewards(){modal(`<h2>All Rewards</h2><p style="margin:6px 0 12px">Tap to claim what you've unlocked.</p>${[["☕","Coffee Coupon",1],["🛵","Free Delivery",1],["🎁","Gift Card",1],["📚","Bookstore Coupon",0],["💰","3% Cashback",0]].map(r=>`<div class="card row"><span style="font-size:24px">${r[0]}</span><h3 style="flex:1;margin-left:12px">${r[1]}</h3>${r[2]?`<button class="btn sm" style="width:auto;padding:9px 16px" onclick="this.textContent='Claimed ✓';this.disabled=true;toast('${r[1]} added to your wallet')">Claim</button>`:`<span class="pill">Locked 🔒</span>`}</div>`).join("")}`)}
+function report(){const[B,Sp]=tot();modal(`<h2>Detailed Report</h2><p style="margin:6px 0 12px">October overview</p>${CATS.map(([n,e])=>`<div class="row" style="padding:8px 0"><span>${e} ${n}</span><b style="color:${S.b[n][0]>S.b[n][1]?"var(--r)":"var(--g)"}">${Math.round(S.b[n][0]/Sp*100)}% of spending</b></div>`).join("")}<div class="card" style="margin-top:12px;background:var(--s2)"><h3>💡 Insight</h3><p>Shopping is over budget. Moving 40 SAR from Groceries would keep your streak safe.</p></div>`)}
+function adjust(){const m=modal("");const draw=()=>{m.querySelector(".sheet").innerHTML=`<h2>Adjust Categories</h2><p style="margin:6px 0 12px">Change your monthly limits.</p>${CATS.map(([n,e])=>`<div class="row" style="padding:10px 0"><h3>${e} ${n}</h3><div class="step"><button onclick="ch('${n}',-50)">−</button><b style="min-width:70px;text-align:center">${S.b[n][1]} SAR</b><button onclick="ch('${n}',50)">+</button></div></div>`).join("")}<button class="btn" style="margin-top:14px" onclick="this.closest('.modal').remove();render();toast('Budget updated ✓')">Save changes</button>`};window.ch=(n,d)=>{S.b[n][1]=Math.max(50,S.b[n][1]+d);save();draw()};draw()}
+function render(){$("#scr").innerHTML=(views[S.screen=="app"?S.tab:S.screen]||views.welcome)();$("#scr").style.animation="none";$("#scr").offsetHeight;$("#scr").style.animation="";$("#scr").scrollTop=0;
+$("#nav").innerHTML=S.screen=="app"?`<div class="nav">${[["home","🏠","Home"],["budget","📊","Budget"],["rewards","🎁","Rewards"],["profile","👤","Profile"]].map(t=>`<button class="${S.tab==t[0]?"on":""}" onclick="tab('${t[0]}')"><span>${t[1]}</span>${t[2]}</button>`).join("")}</div>`:""}
+render();
+</script></body></html>
